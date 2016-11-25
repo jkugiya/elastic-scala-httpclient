@@ -123,16 +123,16 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
 
     // Check mutiget results
     val mgetResults1 = client.findAllByIdsAsList[Blog](config, ids)
-    (mgetResults1) foreach {
+    mgetResults1 foreach {
       case (id, Some(result)) =>
-        assert(result.subject == s"[${id}]Hello World!")
-        assert(result.content == s"${id}This is a mget test!")
+        assert(result.subject == s"[$id]Hello World!")
+        assert(result.content == s"$id This is a mget test!")
     }
     val mgetResults2 = client.findAllByTypeAndIdAsList[Blog](ids.map(id => config -> id))
-    (mgetResults2) foreach {
+    mgetResults2 foreach {
       case (id, Some(result)) =>
-        assert(result.subject == s"[${id}]Hello World!")
-        assert(result.content == s"${id}This is a mget test!")
+        assert(result.subject == s"[$id]Hello World!")
+        assert(result.content == s"$id This is a mget test!")
     }
   }
 
@@ -219,6 +219,33 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
       params = Map("subjectValue" -> "Hello")
     )
     assert(count3 === 99)
+  }
+
+  test("put mapping"){
+    val config = ESConfig("my_index", "my_type")
+    val client = AsyncESClient("http://localhost:9200")
+    val mapping = Map(
+      "type_one" -> Map(
+        "properties" -> Map(
+          "text" -> Map(
+            "type" -> "string",
+            "analyzer" -> "standard"
+          )
+        )
+      ),
+      "type_two" -> Map(
+        "properties" -> Map(
+          "text" -> Map(
+            "type" -> "string",
+            "analyzer" -> "standard"
+          )
+        )
+      )
+    )
+    client.putMappingAsync(config, mapping).map { result =>
+      assert(result.isRight)
+    }
+
   }
 
   test("Async client"){
