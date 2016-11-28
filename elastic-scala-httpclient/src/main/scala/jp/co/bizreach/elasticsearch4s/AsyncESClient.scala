@@ -200,11 +200,22 @@ class AsyncESClient(queryClient: AbstractClient, httpClient: AsyncHttpClient, ur
     insertJsonAsync(config, JsonUtils.serialize(entity))
   }
 
-  def putMappingAsync(config: ESConfig, entity: AnyRef): Future[Either[Map[String, Any], Map[String, Any]]] = {
-    val mapping = Map("mapping" -> entity)
+  def putMappingAsync(config: ESConfig, mapping: AnyRef): Future[Either[Map[String, Any], Map[String, Any]]] = {
+    val mapping = Map("mapping" -> mapping)
     val json = JsonUtils.serialize(mapping)
 
     logger.debug(s"put mapping ${config.indexName}: $json")
+    val future = HttpUtils.putAsync(httpClient, s"${config.url(url)}/${config.indexName}", json)
+    future.map { resultJson =>
+      val map = JsonUtils.deserialize[Map[String, Any]](resultJson)
+      map.get("error").map { case message: String => Left(map) }.getOrElse(Right(map))
+    }
+  }
+
+  def createIndexAsync(config: ESConfig, settings: AnyRef): Future[Either[Map[String, Any], Map[String, Any]]] = {
+    val json = JsonUtils.serialize(settings)
+
+    logger.debug(s"create or update an index with settings")
     val future = HttpUtils.putAsync(httpClient, s"${config.url(url)}/${config.indexName}", json)
     future.map { resultJson =>
       val map = JsonUtils.deserialize[Map[String, Any]](resultJson)
