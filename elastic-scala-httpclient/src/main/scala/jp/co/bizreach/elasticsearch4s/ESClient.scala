@@ -98,8 +98,7 @@ class ESClient(httpClient: AsyncHttpClient, url: String,
   }
 
   def putMapping(config: ESConfig, mapping: AnyRef): Either[Map[String, Any], Map[String, Any]] = {
-    val mapping = Map("mapping" -> mapping)
-    val json = JsonUtils.serialize(mapping)
+    val json = JsonUtils.serialize(Map("mapping" -> mapping))
 
     logger.debug(s"put mapping ${config.indexName}: $json")
     val resultJson = HttpUtils.put(httpClient, s"${config.url(url)}/${config.indexName}", json)

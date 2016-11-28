@@ -245,6 +245,35 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
     client.putMappingAsync(config, mapping).map { result =>
       assert(result.isRight)
     }
+  }
+
+  test("create index with settings"){
+    val config = ESConfig("my_index", "my_type")
+    val client = AsyncESClient("http://localhost:9200")
+    val settings = Map(
+      "mappings" -> Map(
+        "type_one" -> Map(
+          "properties" -> Map(
+            "text" -> Map(
+              "type" -> "string",
+              "analyzer" -> "standard"
+            )
+          )
+        ),
+        "type_two" -> Map(
+          "properties" -> Map(
+            "text" -> Map(
+              "type" -> "string",
+              "analyzer" -> "standard"
+            )
+          )
+        )
+      )
+    )
+
+    client.createIndexAsync(config, settings).map { result =>
+      assert(result.isRight)
+    }
 
   }
 

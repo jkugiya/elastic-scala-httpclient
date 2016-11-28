@@ -201,8 +201,7 @@ class AsyncESClient(queryClient: AbstractClient, httpClient: AsyncHttpClient, ur
   }
 
   def putMappingAsync(config: ESConfig, mapping: AnyRef): Future[Either[Map[String, Any], Map[String, Any]]] = {
-    val mapping = Map("mapping" -> mapping)
-    val json = JsonUtils.serialize(mapping)
+    val json = JsonUtils.serialize(Map("mapping" -> mapping))
 
     logger.debug(s"put mapping ${config.indexName}: $json")
     val future = HttpUtils.putAsync(httpClient, s"${config.url(url)}/${config.indexName}", json)
