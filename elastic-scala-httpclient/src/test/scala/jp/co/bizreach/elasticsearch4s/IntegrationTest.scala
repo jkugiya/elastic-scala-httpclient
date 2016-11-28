@@ -271,7 +271,7 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
       )
     )
 
-    client.createIndexAsync(config, settings).map { result =>
+    client.createOrUpdateIndexAsync(config, settings).map { result =>
       assert(result.isRight)
     }
 
