@@ -126,15 +126,15 @@ class ESClient(httpClient: AsyncHttpClient, url: String,
     map.get("error").map { case message: String => Left(map) }.getOrElse(Right(map))
   }
 
-  def indexExist(config: ESConfig): Either[Throwable, Boolean] = {
+  def indexExist(config: ESConfig): Either[Map[String, Any], Map[String, Any]] = {
     logger.debug(s"index exist ${config.indexName}")
 
     try {
       HttpUtils.head(httpClient, s"${config.url(url)}/${config.indexName}")
-      Right(true)
+      Right(Map("result" -> true))
     } catch {
-      case HttpResponseException(status, _, _) if status == 404 => Right(false)
-      case ex: Throwable => Left(ex)
+      case HttpResponseException(status, _, _) if status == 404 => Right(Map("result" -> false))
+      case ex: Throwable => Left(Map("error" -> ex))
     }
   }
 
