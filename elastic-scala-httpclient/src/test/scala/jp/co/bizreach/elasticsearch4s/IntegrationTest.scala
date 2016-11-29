@@ -221,7 +221,6 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
     assert(count3 === 99)
   }
 
-<<<<<<< HEAD
   test("index exist"){
     val config = ESConfig("my_index")
     val client = AsyncESClient("http://localhost:9200")
@@ -253,32 +252,6 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
     assert(res.isLeft)
   }
 
-  test("create index with settings"){
-    val config = ESConfig("my_index", "my_type")
-    val client = AsyncESClient("http://localhost:9200")
-    val settings = Map(
-      "mappings" -> Map(
-        "type_one" -> Map(
-          "properties" -> Map(
-            "text" -> Map(
-              "type" -> "string",
-              "analyzer" -> "standard"
-            )
-          )
-        ),
-        "type_two" -> Map(
-          "properties" -> Map(
-            "text" -> Map(
-              "type" -> "string",
-              "analyzer" -> "standard"
-            )
-          )
-        )
-      )
-    )
-
-    client.createOrUpdateIndexAsync(config, settings).map { result =>
-=======
   test("put mapping"){
     val config = ESConfig("my_index")
     val client = AsyncESClient("http://localhost:9200")
@@ -290,8 +263,7 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
         )
       )
     )
-    client.putMappingAsync(config, "type_one", mapping, Map("update_all_type" -> "")).map { result =>
->>>>>>> Fix put mapping method to accept parameter and have the correct url
+    client.putMappingAsync(config, mapping).map { result =>
       assert(result.isRight)
     }
   }
@@ -317,6 +289,14 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
     } yield {
       assert(res.isLeft)
     }
+  }
+
+  test("index not exist sync"){
+    val config = ESConfig("my_not_existing_index")
+    val client = ESClient("http://localhost:9200")
+
+    val res = client.indexExist(config)
+    assert(res.isLeft)
   }
 
   test("create index with settings"){
