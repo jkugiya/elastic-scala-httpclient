@@ -233,15 +233,15 @@ class AsyncESClient(queryClient: AbstractClient, httpClient: AsyncHttpClient, ur
     }
   }
 
-  def indexExistAsync(config: ESConfig): Future[Boolean] = {
+  def indexExistAsync(config: ESConfig): Future[Either[Throwable, Boolean]] = {
     logger.debug(s"index exist request")
     val future = HttpUtils.headAsync(httpClient, s"${config.url(url)}/${config.indexName}")
 
     future
-      .map(_ => true)
+      .map(_ => Right(true))
       .recover {
-        case HttpResponseException(status, _, _) if status == 404 => false
-        case ex: Throwable => throw ex
+        case HttpResponseException(status, _, _) if status == 404 => Right(false)
+        case ex: Throwable => Left(ex)
       }
   }
 
