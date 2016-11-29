@@ -109,6 +109,14 @@ class ESClient(httpClient: AsyncHttpClient, url: String,
     }
   }
 
+  def putMapping(config: ESConfig, mapping: AnyRef): Either[Map[String, Any], Map[String, Any]] = {
+    val json = JsonUtils.serialize(Map("mapping" -> mapping))
+
+    val resultJson = HttpUtils.put(httpClient, config.url(url), json)
+    val map = JsonUtils.deserialize[Map[String, Any]](resultJson)
+    map.get("error").map { case message: String => Left(map) }.getOrElse(Right(map))
+  }
+
   def createOrUpdateIndex(config: ESConfig, settings: AnyRef): Either[Map[String, Any], Map[String, Any]] = {
     val json = JsonUtils.serialize(settings)
 
