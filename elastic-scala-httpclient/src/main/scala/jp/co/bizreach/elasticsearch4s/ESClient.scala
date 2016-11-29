@@ -110,9 +110,9 @@ class ESClient(httpClient: AsyncHttpClient, url: String,
   }
 
   def putMapping(config: ESConfig, mapping: AnyRef): Either[Map[String, Any], Map[String, Any]] = {
-    val json = JsonUtils.serialize(Map("mapping" -> mapping))
+    val json = JsonUtils.serialize(mapping)
 
-    val resultJson = HttpUtils.put(httpClient, config.url(url), json)
+    val resultJson = HttpUtils.put(httpClient, s"$url/_mapping/${config.typeName}", json)
     val map = JsonUtils.deserialize[Map[String, Any]](resultJson)
     map.get("error").map { case message: String => Left(map) }.getOrElse(Right(map))
   }
