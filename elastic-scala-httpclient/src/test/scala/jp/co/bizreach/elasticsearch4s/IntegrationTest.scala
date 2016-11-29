@@ -245,7 +245,18 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
       _ <- client.createOrUpdateIndexAsync(config, Map())
       res <- client.indexExistAsync(config)
     } yield {
-      assert(res == true)
+      assert(res.isRight)
+    }
+  }
+
+  test("index not exist"){
+    val config = ESConfig("my_not_existing_index")
+    val client = AsyncESClient("http://localhost:9200")
+
+    for {
+      res <- client.indexExistAsync(config)
+    } yield {
+      assert(res.isLeft)
     }
   }
 
