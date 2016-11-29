@@ -107,6 +107,18 @@ class ESClient(httpClient: AsyncHttpClient, url: String,
     map.get("error").map { case message: String => Left(map) }.getOrElse(Right(map))
   }
 
+  def indexExist(config: ESConfig): Boolean = {
+    logger.debug(s"index exist ${config.indexName}")
+
+    try {
+      HttpUtils.head(httpClient, s"${config.url(url)}/${config.indexName}")
+      true
+    } catch {
+      case HttpResponseException(status, _, _) if status == 404 => false
+      case ex: Throwable => throw ex
+    }
+  }
+
   def createOrUpdateIndex(config: ESConfig, settings: AnyRef): Either[Map[String, Any], Map[String, Any]] = {
     val json = JsonUtils.serialize(settings)
 
