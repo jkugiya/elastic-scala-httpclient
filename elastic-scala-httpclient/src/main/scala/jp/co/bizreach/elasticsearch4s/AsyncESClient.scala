@@ -232,6 +232,16 @@ class AsyncESClient(queryClient: AbstractClient, httpClient: AsyncHttpClient, ur
     }
   }
 
+  def putMappingAsync(config: ESConfig, mapping: AnyRef): Future[Either[Map[String, Any], Map[String, Any]]] = {
+    val json = JsonUtils.serialize(Map("mapping" -> mapping))
+
+    val future = HttpUtils.putAsync(httpClient, config.url(url), json)
+    future.map { resultJson =>
+      val map = JsonUtils.deserialize[Map[String, Any]](resultJson)
+      map.get("error").map { case message: String => Left(map) }.getOrElse(Right(map))
+    }
+  }
+
   def insertAsync(config: ESConfig, id: String, entity: AnyRef):  Future[Either[Map[String, Any], Map[String, Any]]] = {
     insertJsonAsync(config, id, JsonUtils.serialize(entity))
   }
