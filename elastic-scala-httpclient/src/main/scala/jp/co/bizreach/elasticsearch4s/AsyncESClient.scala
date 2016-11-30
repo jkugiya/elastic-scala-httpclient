@@ -177,7 +177,7 @@ class AsyncESClient(queryClient: AbstractClient, httpClient: AsyncHttpClient, ur
   }
 
   def insertJsonAsync(config: ESConfig, json: String): Future[Either[Map[String, Any], Map[String, Any]]] = {
-    logger.debug(s"insertJson:\n$json")
+    logger.debug(s"insertJson:\n${json}")
 
     val future = HttpUtils.postAsync(httpClient, config.url(url), json)
     future.map { resultJson =>
@@ -187,7 +187,7 @@ class AsyncESClient(queryClient: AbstractClient, httpClient: AsyncHttpClient, ur
   }
 
   def insertJsonAsync(config: ESConfig, id: String, json: String): Future[Either[Map[String, Any], Map[String, Any]]] = {
-    logger.debug(s"insertJson:\n$json")
+    logger.debug(s"insertJson:\n${json}")
 
     val future = HttpUtils.postAsync(httpClient, config.url(url) + "/" + id, json)
     future.map { resultJson =>
