@@ -20,11 +20,13 @@ import org.elasticsearch.script.groovy.GroovyPlugin
 import org.codelibs.elasticsearch.sstmpl.ScriptTemplatePlugin
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 class IntegrationTest extends FunSuite with BeforeAndAfter {
 
   System.setSecurityManager(null) // to enable execution of script
   var node: Node = null
+  val DefaultTimeout = 10.second
 
   /**
    * Extend the Node class to supply plugins on the classpath.
@@ -222,26 +224,40 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
   }
 
   test("index exist"){
-    val config = ESConfig("my_index")
+    val config = ESConfig("my_index_1")
     val client = AsyncESClient("http://localhost:9200")
 
-    for {
+    val f = for {
       _ <- client.createOrUpdateIndexAsync(config, Map())
       res <- client.indexExistAsync(config)
-    } yield {
-      assert(res.isRight)
-    }
+    } yield res
+
+    val res = Await.result(f, DefaultTimeout)
+    assert(res.isRight)
+    assert(res.right.get("result").asInstanceOf[Boolean])
+  }
+
+  test("index exist sync"){
+    val config = ESConfig("my_index_2")
+    val client = ESClient("http://localhost:9200")
+
+    client.createOrUpdateIndex(config, Map())
+    val res = client.indexExist(config)
+    assert(res.isRight)
+    assert(res.right.get("result").asInstanceOf[Boolean])
   }
 
   test("index not exist"){
     val config = ESConfig("my_not_existing_index")
     val client = AsyncESClient("http://localhost:9200")
 
-    for {
+    val f = for {
       res <- client.indexExistAsync(config)
-    } yield {
-      assert(res.isLeft)
-    }
+    } yield res
+
+    val res = Await.result(f, DefaultTimeout)
+    assert(res.isRight)
+    assert(!res.right.get("result").asInstanceOf[Boolean])
   }
 
   test("index not exist sync"){
@@ -296,11 +312,12 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
     val client = ESClient("http://localhost:9200")
 
     val res = client.indexExist(config)
-    assert(res.isLeft)
+    assert(res.isRight)
+    assert(!res.right.get("result").asInstanceOf[Boolean])
   }
 
   test("create index with settings"){
-    val config = ESConfig("my_index", "my_type")
+    val config = ESConfig("my_index_3")
     val client = AsyncESClient("http://localhost:9200")
     val settings = Map(
       "mappings" -> Map(
@@ -323,10 +340,9 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
       )
     )
 
-    client.createOrUpdateIndexAsync(config, settings).map { result =>
-      assert(result.isRight)
-    }
-
+    val f =  client.createOrUpdateIndexAsync(config, settings)
+    val res = Await.result(f, DefaultTimeout)
+    assert(res.isRight)
   }
 
   test("Async client"){
