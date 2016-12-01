@@ -247,29 +247,17 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
     assert(res.right.get("result").asInstanceOf[Boolean])
   }
 
-  test("index not exist"){
-    val config = ESConfig("my_not_existing_index")
-    val client = AsyncESClient("http://localhost:9200")
-
-    val f = for {
-      res <- client.indexExistAsync(config)
-    } yield res
-
-    val res = Await.result(f, DefaultTimeout)
-    assert(res.isRight)
-    assert(!res.right.get("result").asInstanceOf[Boolean])
-  }
-
   test("index not exist sync"){
     val config = ESConfig("my_not_existing_index")
     val client = ESClient("http://localhost:9200")
 
     val res = client.indexExist(config)
-    assert(res.isLeft)
+    assert(res.isRight)
+    assert(!res.right.get("result").asInstanceOf[Boolean])
   }
 
   test("put mapping"){
-    val config = ESConfig("my_index")
+    val config = ESConfig("my_index", "my_type")
     val client = AsyncESClient("http://localhost:9200")
     val mapping = Map(
       "properties" -> Map(
@@ -284,18 +272,6 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("index exist"){
-    val config = ESConfig("my_index")
-    val client = AsyncESClient("http://localhost:9200")
-
-    for {
-      _ <- client.createOrUpdateIndexAsync(config, Map())
-      res <- client.indexExistAsync(config)
-    } yield {
-      assert(res.isRight)
-    }
-  }
-
   test("index not exist"){
     val config = ESConfig("my_not_existing_index")
     val client = AsyncESClient("http://localhost:9200")
@@ -305,15 +281,6 @@ class IntegrationTest extends FunSuite with BeforeAndAfter {
     } yield {
       assert(res.isLeft)
     }
-  }
-
-  test("index not exist sync"){
-    val config = ESConfig("my_not_existing_index")
-    val client = ESClient("http://localhost:9200")
-
-    val res = client.indexExist(config)
-    assert(res.isRight)
-    assert(!res.right.get("result").asInstanceOf[Boolean])
   }
 
   test("create index with settings"){
